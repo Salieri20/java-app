@@ -1,0 +1,34 @@
+node('docker') {
+  // load credentials into variables
+  withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+
+    stage('Checkout') {
+      checkout scm
+    }
+
+    stage('Build (Maven)') {
+      // use wrapper if present
+      sh './mvnw -B clean package || mvn -B clean package'
+      archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+    }
+
+    stage('Docker Build') {
+      def imgTag = "${DOCKERHUB_USER}/java-app:${env.BUILD_NUMBER}"
+      echo "Building image ${imgTag}"
+      def appImage = docker.build(imgTag) // builds from Dockerfile
+      // tag latest too
+      sh "docker tag ${imgTag} ${DOCKERHUB_USER}/java-app:latest || true"
+    }
+
+    stage('Docker Push') {
+      // login then push
+      sh "echo ${DOCKERHUB_PASS} | docker login -u ${DOCKERHUB_USER} --password-stdin"
+      sh "docker push ${DOCKERHUB_USER}/java-app:${env.BUILD_NUMBER}"
+      sh "docker push ${DOCKERHUB_USER}/java-app:latest || true"
+    }
+
+    stage('Cleanup') {
+      sh "docker image prune -f || true"
+    }
+  } // withCredentials
+} // node
