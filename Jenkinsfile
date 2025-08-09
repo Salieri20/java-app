@@ -1,43 +1,54 @@
-pipeline{
-    agent {
-        label "java"
+pipeline {
+  agent any
+
+  environment {
+    IMAGE = "salieri20/java-app"
+    CREDENTIALS_ID = 'dockerhub'   
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
-    tools{
-        maven 'mvn-3-5-4'
-        jdk 'java-11'
+
+    stage('Build') {
+      steps {
+        sh './mvnw -B -DskipTests package'
+      }
+      post {
+        success { archiveArtifacts artifacts: 'target/*.jar', fingerprint: true }
+      }
     }
-    environment{
-        DOCKER_USER = credentials('docker-username')
-        DOCKER_PASS = credentials('docker-password')
+
+    stage('Unit Tests') {
+      steps {
+        sh './mvnw -B test || true'  
+      }
     }
-    stages{
-        stage("Dependancy check"){
-            steps{
-                sh "mvn dependency-check:check"
-                dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-            }
-        }
-        stage("build app"){
-            steps{
-                sh "mvn package install"
-            }
-        }
-        stage("archive app"){
-            steps{
-                archiveArtifacts artifacts: '**/*.jar', followSymlinks: false
-            }
-        }
-        stage("docker build"){
-            steps{
-                sh "docker build -t hassaneid/iti-java:v${BUILD_NUMBER} ."
-                sh "docker images"
-            }
-        }
-        // stage("docker push"){
-        //     steps{
-        //         sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-        //         sh "docker push hassaneid/iti-java:v${BUILD_NUMBER}"
-        //     }
-        // }
+
+    stage('Docker Build') {
+      steps {
+        sh "docker build -t ${IMAGE}:${BUILD_NUMBER} ."
+      }
     }
+
+    stage('Push to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: "${CREDENTIALS_ID}",
+                                          usernameVariable: 'DOCKER_USER',
+                                          passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+          sh "docker push ${IMAGE}:${BUILD_NUMBER}"
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      sh 'docker image ls --format "{{.Repository}}:{{.Tag}} {{.Size}}" || true'
+    }
+  }
 }
