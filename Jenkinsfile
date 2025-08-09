@@ -5,6 +5,7 @@ pipeline {
     IMAGE_NAME = "${DOCKERHUB_CREDS_USR}/java-app"   
     TAG = "${env.BUILD_NUMBER}"
   }
+  tools { maven 'M3' }
   stages {
     stage('Checkout') {
       steps { checkout scm }
