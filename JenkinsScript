@@ -1,4 +1,4 @@
-node('any') {
+node{
   withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
 
     stage('Checkout') {
