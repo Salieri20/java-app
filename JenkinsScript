@@ -4,9 +4,9 @@ node{
     stage('Checkout') {
       checkout scm
     }
-
+    def mvnHome = tool name: 'M3', type: 'hudson.tasks.Maven$MavenInstallation'
     stage('Build (Maven)') {
-      sh './mvnw -B clean package || mvn -B clean package'
+      sh "${mvnHome}/bin/mvn -B clean package"
       archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
     }
 
