@@ -1,0 +1,56 @@
+@Library('app-java-sharedlib') _
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        IMAGE_NAME = "${DOCKERHUB_CREDS_USR}/java-app"
+        TAG = "${env.BUILD_NUMBER}"
+    }
+
+    tools { maven 'M3' }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build & Package') {
+            steps {
+                script {
+                    helper = new BuildHelper(this)
+                    helper.runBuild(true) // skipIfNoTests = true
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    helper.buildDockerImage(env.IMAGE_NAME, env.TAG)
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    helper.pushDockerImage(env.IMAGE_NAME, env.TAG, 'dockerhub-creds')
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script { helper.cleanupDocker() }
+        }
+        success {
+            echo "Pushed ${IMAGE_NAME}:${TAG} and ${IMAGE_NAME}:latest"
+        }
+        failure {
+            echo "Build or push failed"
+        }
+    }
+}
