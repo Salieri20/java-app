@@ -1,4 +1,5 @@
 @Library('app-java-sharedlib') _
+import org.example.BuildHelper 
 
 pipeline {
     agent any
