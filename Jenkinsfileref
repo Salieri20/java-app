@@ -2,7 +2,7 @@
 import org.example.BuildHelper 
 
 pipeline {
-    agent { label ip-10-0-0-236.ec2.internal} 
+    agent { label 'worker-node' } 
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
