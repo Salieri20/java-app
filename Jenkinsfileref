@@ -7,7 +7,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
         IMAGE_NAME = "${DOCKERHUB_CREDS_USR}/java-app"
-        TAG = "${env.BUILD_NUMBER}"
+        TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
     }
 
     tools { maven 'M3' }
