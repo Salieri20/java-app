@@ -18,6 +18,13 @@ pipeline {
             steps { checkout scm }
         }
 
+        stage('Print Agent') {
+          steps {
+            echo "Running on agent: ${env.NODE_NAME}"
+            sh 'hostname'
+          }
+        }
+
         stage('Build & Package') {
             steps {
                 script {
