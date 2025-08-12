@@ -41,6 +41,13 @@ pipeline {
                 }
             }
         }
+        stage('Update Deployment Manifest') {
+            steps {
+                script {
+                    helper.updateDeploymentManifest("k8s/deployment.yaml", env.IMAGE_NAME, env.TAG)
+                }
+            }
+        }
     }
 
     post {
