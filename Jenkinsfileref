@@ -6,6 +6,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        GITHUB_CREDS = credentials('github-creds')
         IMAGE_NAME = "${DOCKERHUB_CREDS_USR}/java-app"
         TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
     }
