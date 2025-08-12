@@ -17,19 +17,3 @@ spec:
           image: salieri20/java-app:0cdc591
           ports:
             - containerPort: 8090
-          livenessProbe:
-            httpGet:
-              path: /all
-              port: 8090
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /all
-              port: 8090
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 3
