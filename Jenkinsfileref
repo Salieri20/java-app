@@ -12,7 +12,7 @@ pipeline {
     }
 
     tools { maven 'M3' }
-
+    
     stages {
         stage('Checkout') {
             steps { checkout scm }
@@ -20,6 +20,7 @@ pipeline {
 
         stage('Print Agent') {
           steps {
+            sh 'docker version'
             echo "Running on agent: ${env.NODE_NAME}"
             sh 'hostname'
           }
