@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: salieri20/to-do:4efd904d946d8bdb5af9a6531259b10c80c5a365
+          image: salieri20/java-app:0cdc591
           ports:
             - containerPort: 8090
           livenessProbe:
