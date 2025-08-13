@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: salieri20/java-app:0cdc591
+          image: salieri20/java-app:cfc5bf1
           ports:
             - containerPort: 8090
