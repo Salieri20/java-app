@@ -46,7 +46,7 @@ flowchart TD
 ---
 
 ## 🔗 Jenkins Shared Library
-This project uses a [Jenkins Shared Library]([https://github.com/YourUser/your-jenkins-shared-lib](https://github.com/Salieri20/jenkins-shared-lib)) 
+This project uses a [Jenkins Shared Library](https://github.com/Salieri20/jenkins-shared-lib) 
 to standardize pipeline stages (build, test, Docker image push, deploy).  
 
 --- 
