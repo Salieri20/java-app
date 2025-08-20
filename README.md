@@ -1,4 +1,4 @@
-# End-to-End CI/CD Pipeline for Java Application  
+g# End-to-End CI/CD Pipeline for Java Application  
 
 ![CI/CD Pipeline](https://img.shields.io/badge/DevOps-CI%2FCD-blue) ![AWS](https://img.shields.io/badge/Cloud-AWS-orange) ![Terraform](https://img.shields.io/badge/IaC-Terraform-purple) ![Ansible](https://img.shields.io/badge/Automation-Ansible-red) ![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes-blue)  
 
@@ -44,6 +44,12 @@ flowchart TD
 6. **Prometheus + Grafana** monitor the app & cluster health.  
 
 ---
+
+## 🔗 Jenkins Shared Library
+This project uses a [Jenkins Shared Library]([https://github.com/YourUser/your-jenkins-shared-lib](https://github.com/Salieri20/jenkins-shared-lib)) 
+to standardize pipeline stages (build, test, Docker image push, deploy).  
+
+--- 
 
 ##  Setup & Deployment  
 
