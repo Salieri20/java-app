@@ -106,7 +106,6 @@ kubectl patch svc prom-grafana -n monitoring -p '{"spec": {"type": "NodePort"}}'
 ```
 ├── terraform/              # Terraform IaC configs for AWS
 ├── ansible/                # Ansible inventory + playbooks
-├── jenkins-shared-lib/     # Reusable Jenkins pipeline library
 ├── manifests/              # Kubernetes manifests (ArgoCD syncs from here)
 └── java-app/               # Java application source code
 ```
