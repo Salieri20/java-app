@@ -1,0 +1,8 @@
+ami_id                = "ami-05ffe3c48a9991133"
+key_name              = "jenkins" 
+region                = "us-east-1"
+az                    = "us-east-1a"
+vpc_name              = "lab2-vpc"
+public_subnet_name    = "public-subnet"
+public_instance_name  = "master"
+security_group_name   = "web-sg"
