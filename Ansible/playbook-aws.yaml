@@ -1,0 +1,147 @@
+- name: Prepare EC2 for all nodes
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install required system packages
+      yum:
+        name:
+          - git
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+          - iproute-tc
+        state: present
+
+          # Docker
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+          # Jenkins
+
+    - name: Install Java
+      yum:
+        name: java-17-amazon-corretto
+        state: present
+
+        # Kubeadm 
+    - name: Add Kubernetes repo
+      copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/repodata/repomd.xml.key
+
+    - name: Install kubeadm, kubelet, kubectl
+      yum:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Enable kubelet
+      systemd:
+        name: kubelet
+        enabled: true
+
+
+- name: Prepare EC2 for master node 
+  hosts: master
+  become: true
+  tasks:
+    - name: Get primary IP address of master
+      set_fact:
+        master_ip: "{{ ansible_default_ipv4.address }}"
+
+    - name: Initialize Kubernetes master
+      shell: |
+        kubeadm init --apiserver-advertise-address={{ master_ip }} \
+                    --pod-network-cidr=10.244.0.0/16 \
+                    --upload-certs
+      args:
+        executable: /bin/bash
+      register: kubeadm_init
+
+    - name: Get kubeadm join command
+      shell: kubeadm token create --print-join-command
+      register: join_cmd
+
+    - name: Set join command fact
+      set_fact:
+        kubeadm_join_command: "{{ join_cmd.stdout }}"
+
+    - name: Create .kube directory for ec2-user
+      file:
+        path: /home/ec2-user/.kube
+        state: directory
+        owner: ec2-user
+        group: ec2-user
+        mode: '0755'
+
+    - name: Copy kubeconfig to ec2-user
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/ec2-user/.kube/config
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
+        remote_src: yes
+
+    - name: Install Flannel CNI
+      become: yes
+      become_user: ec2-user
+      shell: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+      args:
+        executable: /bin/bash
+        
+        # Jenkins 
+    - name: Add Jenkins repo
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+
+    - name: Import Jenkins GPG key
+      rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: Enable and start Jenkins
+      systemd:
+        name: jenkins
+        enabled: true
+        state: started
+
+
+- name: Prepare EC2 for worker node 
+  hosts: node01
+  become: true
+  tasks:
+    - name: Join the cluster
+      become: yes
+      shell: "{{ hostvars['master'].kubeadm_join_command }}"
+
